@@ -1,9 +1,12 @@
 import 'package:flushbar/flushbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
+import 'package:percent_indicator/circular_percent_indicator.dart';
 import 'package:todo_list/helpers/task_helper.dart';
 import 'package:todo_list/models/task.dart';
 import 'package:todo_list/views/task_dialog.dart';
+
+import 'hex_color.dart';
 
 class HomePage extends StatefulWidget {
   @override
@@ -14,7 +17,8 @@ class _HomePageState extends State<HomePage> {
   List<Task> _taskList = [];
   TaskHelper _helper = TaskHelper();
   bool _loading = true;
-
+  Color _color = HexColor('#FFFFFF');
+  double seila;
   @override
   void initState() {
     super.initState();
@@ -26,10 +30,24 @@ class _HomePageState extends State<HomePage> {
     });
   }
 
+  void total() {
+    
+    seila = 100;
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: Text('Lista de Tarefas')),
+      appBar: AppBar(title: Text('Lista de Tarefas'), actions: <Widget>[
+        new CircularPercentIndicator(
+          animateFromLastPercent: true,
+          radius: 45.0,
+          lineWidth: 4.0,
+          percent: 1,
+          center: new Text((seila).toString()),
+          progressColor: Colors.green,
+        ),
+      ]),
       floatingActionButton:
           FloatingActionButton(child: Icon(Icons.add), onPressed: _addNewTask),
       body: _buildTaskList(),
@@ -37,31 +55,40 @@ class _HomePageState extends State<HomePage> {
   }
 
   Widget _buildTaskList() {
+    total();
     if (_taskList.isEmpty) {
       return Center(
         child: _loading ? CircularProgressIndicator() : Text("Sem tarefas!"),
       );
     } else {
-      return ListView.builder(
+      return ListView.separated(
+        
         itemBuilder: _buildTaskItemSlidable,
         itemCount: _taskList.length,
+        separatorBuilder: (context, index) => Divider(
+          color: Colors.black,
+        ),
       );
     }
   }
 
   Widget _buildTaskItem(BuildContext context, int index) {
     final task = _taskList[index];
-    return CheckboxListTile(
-      value: task.isDone,
-      title: Text(task.title),
-      subtitle: Text(task.description),
-      onChanged: (bool isChecked) {
-        setState(() {
-          task.isDone = isChecked;
-        });
 
-        _helper.update(task);
-      },
+    return Container(
+      color: HexColor(task.priority),
+      child: CheckboxListTile(
+        value: task.isDone,
+        title: Text(task.title),
+        subtitle: Text(task.description),
+        onChanged: (bool isChecked) {
+          setState(() {
+            task.isDone = isChecked;
+          });
+
+          _helper.update(task);
+        },
+      ),
     );
   }
 
